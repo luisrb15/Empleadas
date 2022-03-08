@@ -28,7 +28,7 @@ public class EmpleadaService {
 		empleada.setApellido(apellido);
 		empleada.setMail(mail);
 		empleada.setActivo(true);
-		empleada.setDni(dni);
+		empleada.setDni(dni); 
 
 		empleadaRepository.save(empleada);
 
