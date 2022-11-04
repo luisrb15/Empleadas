@@ -1,7 +1,10 @@
 package com.empleadas.controller;
 
+import com.empleadas.entities.Guardia;
+import com.empleadas.service.GuardiaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.empleadas.entities.Empleada;
 import com.empleadas.service.EmpleadaService;
-import com.empleadas.service.NotificacionService;
 
 @Controller
 @RequestMapping("")
@@ -21,8 +23,8 @@ public class EmpleadaController {
 	private EmpleadaService empleadaService;
 
 	@Autowired
-	private NotificacionService notificacionService;
-	
+	private GuardiaService guardiaService;
+
 	@GetMapping("")
 	public String ingreso() {
 		return "index";
@@ -37,15 +39,22 @@ public class EmpleadaController {
 		}
 		return "index";
 	}
-	
-	@PostMapping("/presente")
-	public String darPresente(@RequestParam Empleada empleada) {
-		enviarMail(empleada.getId());
-		return "presente";
+
+	@GetMapping("/presente/{id}")
+	public String darPresente(@PathVariable("id") String id) {
+		guardiaService.ingreso(id);
+		return "presente-exitoso";
 	}
-	
-	@PostMapping("/mailSender/{id}")
-	public void enviarMail(@PathVariable("id") String id) {
-		notificacionService.sendSimpleEmail(id);
+
+	@GetMapping("/salida/{id}")
+	public String salir(Model model, @PathVariable("id") String idEmpleada){
+		Guardia guardia = guardiaService.buscarActiva(empleadaService.buscarId(idEmpleada));
+		if (guardia != null){
+			guardiaService.salida(guardia.getId());
+			return "salida-exitosa";
+		} else {
+			model.addAttribute("message", "No se encontraron guardias activas para el usuario seleccionado");
+			return "error";
+		}
 	}
 }

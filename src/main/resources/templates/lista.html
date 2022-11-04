@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
         <img src="../static/img/Logo.png" class="rounded" alt="logo" width="400" height="250">
     </div>
  
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
                 <th scope="col">ID</th>
@@ -45,7 +45,7 @@
             </tr>
         </tbody>
     </table>
-
+<a type="button" class="btn btn-success" th:href="@{/admin/form}">Agregar nueva empleada</a>
 </body>
 
 </html>

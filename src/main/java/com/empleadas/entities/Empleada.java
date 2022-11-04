@@ -23,7 +23,7 @@ public class Empleada {
 	private Integer dni;
 	
 	public Empleada() {
-		super();
+		setActivo(true);
 	}
 	public String getId() {
 		return id;

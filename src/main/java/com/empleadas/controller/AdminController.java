@@ -2,14 +2,12 @@ package com.empleadas.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import com.empleadas.entities.Empleada;
 import com.empleadas.service.EmpleadaService;
@@ -17,6 +15,8 @@ import com.empleadas.service.EmpleadaService;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+	Logger logger = LoggerFactory.getLogger(AdminController.class);
 
 	@Autowired
 	private EmpleadaService empleadaService;
@@ -37,31 +37,30 @@ public class AdminController {
 	public String subirFormulario(
 			ModelMap model, 
 			@RequestParam(required = false)String id , 
-			@RequestParam String nombre, 
+			@RequestParam String nombre,
 			@RequestParam String apellido, 
 			@RequestParam String mail,
-			@RequestParam Integer dni) 
+			@RequestParam String dni)
 					throws Exception {
-		if(id==null) {
-			empleadaService.registrar(nombre, apellido, mail, dni);
-		}else{
-			Empleada empleada = empleadaService.modificar(id, nombre, apellido, mail, dni);
-			model.put("empleada", empleada);
+		Integer dni1 = Integer.valueOf(dni);
+		if(id == null) {
+			empleadaService.registrar(nombre, apellido, mail, dni1);
+		}else {
+			empleadaService.modificar(id, nombre, apellido, mail, dni1);
 		}
-		
-		return "lista";
+		return "redirect:/admin/lista";
 	}
 	
 	@GetMapping("/baja/{id}")
 	public String baja(@PathVariable("id") String id) {
 		empleadaService.baja(id);
-		return "redirect:/admin";
+		return "redirect:/admin/lista";
 	}
 	
 	@GetMapping("/alta/{id}")
 	public String alta(@PathVariable("id") String id) {
 		empleadaService.alta(id);
-		return "redirect:/admin";
+		return "redirect:/admin/lista";
 	}
 	
 	@GetMapping("/modificar/{id}")

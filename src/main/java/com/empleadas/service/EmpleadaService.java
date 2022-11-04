@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,71 +16,63 @@ import com.empleadas.repository.EmpleadaRepository;
 @Service
 public class EmpleadaService {
 
+	Logger logger = LoggerFactory.getLogger(EmpleadaService.class);
+
 	@Autowired
 	private EmpleadaRepository empleadaRepository;
 
 	@Transactional
-	public Empleada registrar(String nombre, String apellido, String mail, Integer dni) throws Exception {
-
-		validarDni(dni);
+	public void registrar(String nombre, String apellido, String mail, Integer dni) throws Exception {
 		
 		Empleada empleada = new Empleada();
 
-		empleada.setNombre(nombre);
-		empleada.setApellido(apellido);
-		empleada.setMail(mail);
-		empleada.setActivo(true);
-		empleada.setDni(dni); 
-
-		empleadaRepository.save(empleada);
-
-		return empleada;
-	}
-
-	@Transactional
-	public Empleada modificar(String id, String nombre, String apellido, String mail, Integer dni) {
-
-		Empleada empleada = buscarId(id);
-
+		empleada.setId(generarId());
 		empleada.setNombre(nombre);
 		empleada.setApellido(apellido);
 		empleada.setMail(mail);
 		empleada.setDni(dni);
-
+		logger.info("Empleada {} {} registrada", empleada.getNombre(), empleada.getApellido());
 		empleadaRepository.save(empleada);
-
-		return empleada;
 	}
 
 	@Transactional
-	public Empleada alta(String id) {
+	public void modificar(String id, String nombre, String apellido, String mail, Integer dni) {
+
+		Optional<Empleada> respuesta = empleadaRepository.findById(id);
+		if (respuesta.isPresent()){
+			Empleada empleada = respuesta.get();
+			logger.info("Empleada {} {}, DNI {}, mail {}, activa = {}, con ID {}",empleada.getNombre(), empleada.getApellido(), empleada.getDni(), empleada.getMail(), empleada.getActivo(), empleada.getId());
+			empleada.setNombre(nombre);
+			empleada.setApellido(apellido);
+			empleada.setMail(mail);
+			empleada.setDni(dni);
+			logger.info("Empleada {} {}, DNI {}, mail {}, activa = {}, con ID {}",empleada.getNombre(), empleada.getApellido(), empleada.getDni(), empleada.getMail(), empleada.getActivo(), empleada.getId());
+			empleadaRepository.save(empleada);
+		} else {
+			logger.error("No se encontró la empleada {} {}", nombre, apellido);
+			throw new RuntimeException("No se encontró la empleada");
+		}
+	}
+
+	@Transactional
+	public void alta(String id) {
 		Empleada empleada = buscarId(id);
 		empleada.setActivo(true);
-
-		empleadaRepository.save(empleada);
-
-		return empleada;
+		logger.info("Empleada {} {} cambió su estado de activa a = {}", empleada.getNombre(), empleada.getApellido(), empleada.getActivo());
 	}
 	
 	@Transactional
-	public Empleada baja(String id) {
+	public void baja(String id) {
 		Empleada empleada = buscarId(id);
 		empleada.setActivo(false);
-
-		empleadaRepository.save(empleada);
-
-		return empleada;
+		logger.info("Empleada {} {} cambió su estado de activa a = {}", empleada.getNombre(), empleada.getApellido(), empleada.getActivo());
 	}
 
 	@Transactional
 	public Empleada buscarId(String id) {
 
 		Optional<Empleada> respuesta = empleadaRepository.findById(id);
-		if (respuesta.isPresent()) {
-			Empleada empleada = respuesta.get();
-			return empleada;
-		}
-		return null;
+		return respuesta.orElse(null);
 	}
 	
 	@Transactional
@@ -98,8 +92,31 @@ public class EmpleadaService {
 	
 	private void validarDni (Integer dni) throws Exception {
 		Integer documento = empleadaRepository.buscarDni(dni).getDni();
-		if (documento == null || documento == 0 || documento.equals(0)) {
+		if (documento == null || documento == 0) {
 			throw new Exception();
 		}
 	}
+
+	//id generator
+	@Transactional
+	public String generarId() {
+		String id = "";
+		List<Empleada> empleadas = listaEmpleadas();
+		if (empleadas.size() == 0) {
+			id = "1";
+		} else {
+			id = String.valueOf(empleadas.size() + 1);
+		}
+		return id;
+	}
+
+	//@Transactional
+	//public void ingresar(String idEmpleada) {
+	//	calendarService.ingreso(idEmpleada);
+	//}
+
+	//@Transactional
+	//public void salir(String idCalendar) {
+	//	calendarService.salida(idCalendar);
+	//}
 }
